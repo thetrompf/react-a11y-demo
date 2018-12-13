@@ -1,28 +1,41 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback, useRef } from 'react';
+import { setConfig, hot } from 'react-hot-loader';
+import { ThemeProvider } from 'styled-components';
+import { Theme } from './Theme';
+import { Sidebar } from './Components/Sidebar';
+import { TabBoundary, TabRegistry } from '@secoya/tab-navigation.ts';
+import { Main } from './Components/Main';
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
+setConfig({
+	pureSFC: true
+});
 
-export default App;
+interface Props {}
+
+const App: React.SFC<Props> = _props => {
+	const ref = useRef<TabBoundary | null>(null);
+	const onClick = useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			e.preventDefault();
+			e.stopPropagation();
+			if (ref.current != null) {
+				const tabRegistry = ref.current.context.tabRegistry as TabRegistry | null;
+				if (tabRegistry != null) {
+					tabRegistry.focusFirst();
+				}
+			}
+		},
+		[ref]
+	);
+
+	return (
+		<ThemeProvider theme={Theme}>
+			<TabBoundary onClick={onClick} ref={ref}>
+				<Sidebar />
+				<Main />
+			</TabBoundary>
+		</ThemeProvider>
+	);
+};
+
+export default hot(module)(App);
